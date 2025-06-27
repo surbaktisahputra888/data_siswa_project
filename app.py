@@ -42,6 +42,9 @@ def hitung_predikat(nilai):
 # --- Routing ---
 @app.route('/', methods=['GET', 'POST'])
 def index():
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+
     db = get_db()
     if request.method == 'POST':
         nama = request.form['nama']
@@ -54,7 +57,6 @@ def index():
         flash('Data siswa berhasil ditambahkan!')
         return redirect(url_for('index'))
 
-    # GET
     keyword = request.args.get('cari', '')
     filter_val = request.args.get('filter', '')
     filter_predikat = request.args.get('filter_predikat', '')
@@ -86,9 +88,9 @@ def index():
     terendah = min(semua, key=lambda x: x['nilai'], default=None)
 
     return render_template('index.html', siswa=siswa, keyword=keyword,
-                       filter_predikat=filter_predikat,
-                       tidak_lulus=tidak_lulus, jumlah=jumlah,
-                       rata2=rata2, tertinggi=tertinggi, terendah=terendah)
+                           filter_val=filter_val, filter_predikat=filter_predikat, sort=sort,
+                           tidak_lulus=tidak_lulus, jumlah=jumlah, rata2=rata2,
+                           tertinggi=tertinggi, terendah=terendah)
 
 @app.route('/edit/<int:id>', methods=['GET', 'POST'])
 def edit(id):
@@ -172,11 +174,6 @@ def export_pdf():
     output.seek(0)
     return send_file(output, download_name="data_siswa.pdf", as_attachment=True)
 
-@app.route('/logout')
-def logout():
-    flash('Logout berhasil! (simulasi)')
-    return redirect(url_for('index'))
-
 @app.route('/grafik')
 def grafik():
     db = get_db()
@@ -186,6 +183,25 @@ def grafik():
     jumlah = [row[1] for row in data]
 
     return render_template('grafik.html', predikat=predikat, jumlah=jumlah)
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        if username == 'admin' and password == '123':
+            session['logged_in'] = True
+            flash('Login berhasil!')
+            return redirect(url_for('index'))
+        else:
+            flash('Username atau password salah!')
+    return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    session.pop('logged_in', None)
+    flash('Logout berhasil!')
+    return redirect(url_for('login'))
 
 if __name__ == '__main__':
     app.run(debug=True)
