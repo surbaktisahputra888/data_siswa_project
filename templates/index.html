@@ -35,6 +35,7 @@
             <a href="{{ url_for('logout') }}" class="btn btn-outline-secondary btn-sm">Logout</a>
             <a href="{{ url_for('export_excel') }}" class="btn btn-success btn-sm">📥 Ekspor Excel</a>
             <a href="{{ url_for('export_pdf') }}" class="btn btn-outline-dark btn-sm">📄 Ekspor PDF</a>
+            <a href="{{ url_for('grafik') }}" class="btn btn-info btn-sm">📊 Lihat Grafik</a>
             <a href="{{ url_for('hapus_semua') }}"
                onclick="return confirm('Yakin ingin menghapus SEMUA data?')"
                class="btn btn-danger btn-sm">🗑️ Hapus Semua</a>
@@ -60,19 +61,29 @@
     </form>
 
     <form method="GET" class="row mb-4">
-        <div class="col-md-4 mb-2">
-            <input type="text" name="cari" placeholder="Cari nama..." value="{{ keyword }}" class="form-control">
-        </div>
-        <div class="col-md-3 mb-2 form-check">
-            <input class="form-check-input" type="checkbox" name="filter" value="tidak_lulus"
-                   {% if request.args.get('filter') == 'tidak_lulus' %}checked{% endif %}>
-            <label class="form-check-label">Hanya yang Tidak Lulus</label>
-        </div>
-        <div class="col-md-4 mb-2">
-            <button type="submit" class="btn btn-secondary">Cari</button>
-            <a href="{{ url_for('index') }}" class="btn btn-outline-primary btn-sm ms-2">🔄 Tampilkan Semua</a>
-        </div>
-    </form>
+    <div class="col-md-3 mb-2">
+        <input type="text" name="cari" placeholder="Cari nama..." value="{{ keyword }}" class="form-control">
+    </div>
+    <div class="col-md-3 mb-2">
+        <select name="filter_predikat" class="form-select">
+            <option value="">-- Semua Predikat --</option>
+            <option value="A" {% if request.args.get('filter_predikat') == 'A' %}selected{% endif %}>A</option>
+            <option value="B" {% if request.args.get('filter_predikat') == 'B' %}selected{% endif %}>B</option>
+            <option value="C" {% if request.args.get('filter_predikat') == 'C' %}selected{% endif %}>C</option>
+            <option value="D" {% if request.args.get('filter_predikat') == 'D' %}selected{% endif %}>D</option>
+        </select>
+    </div>
+    <div class="col-md-3 mb-2">
+    <select name="sort" class="form-select">
+        <option value="">-- Urutkan Nilai --</option>
+        <option value="asc" {% if request.args.get('sort') == 'asc' %}selected{% endif %}>Nilai Terendah</option>
+        <option value="desc" {% if request.args.get('sort') == 'desc' %}selected{% endif %}>Nilai Tertinggi</option>
+    </select>
+    </div>
+    <div class="col-md-3 mb-2">
+        <button type="submit" class="btn btn-secondary w-100">Cari</button>
+    </div>
+</form>
 
     <table class="table table-bordered table-striped">
         <thead class="table-light">

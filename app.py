@@ -57,12 +57,23 @@ def index():
     # GET
     keyword = request.args.get('cari', '')
     filter_val = request.args.get('filter', '')
+    filter_predikat = request.args.get('filter_predikat', '')
+    sort = request.args.get('sort', '')
 
     query = 'SELECT * FROM siswa WHERE nama LIKE ?'
     params = [f'%{keyword}%']
     if filter_val == 'tidak_lulus':
         query += ' AND status = ?'
         params.append('Tidak Lulus')
+
+    if filter_predikat:
+        query += ' AND predikat = ?'
+        params.append(filter_predikat)
+
+    if sort == 'asc':
+        query += ' ORDER BY nilai ASC'
+    elif sort == 'desc':
+        query += ' ORDER BY nilai DESC'
 
     siswa = db.execute(query, params).fetchall()
 
@@ -75,8 +86,9 @@ def index():
     terendah = min(semua, key=lambda x: x['nilai'], default=None)
 
     return render_template('index.html', siswa=siswa, keyword=keyword,
-                           tidak_lulus=tidak_lulus, jumlah=jumlah,
-                           rata2=rata2, tertinggi=tertinggi, terendah=terendah)
+                       filter_predikat=filter_predikat,
+                       tidak_lulus=tidak_lulus, jumlah=jumlah,
+                       rata2=rata2, tertinggi=tertinggi, terendah=terendah)
 
 @app.route('/edit/<int:id>', methods=['GET', 'POST'])
 def edit(id):
@@ -164,6 +176,16 @@ def export_pdf():
 def logout():
     flash('Logout berhasil! (simulasi)')
     return redirect(url_for('index'))
+
+@app.route('/grafik')
+def grafik():
+    db = get_db()
+    data = db.execute('SELECT predikat, COUNT(*) as jumlah FROM siswa GROUP BY predikat').fetchall()
+
+    predikat = [row[0] for row in data]
+    jumlah = [row[1] for row in data]
+
+    return render_template('grafik.html', predikat=predikat, jumlah=jumlah)
 
 if __name__ == '__main__':
     app.run(debug=True)
